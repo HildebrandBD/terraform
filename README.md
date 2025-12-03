@@ -29,7 +29,7 @@ The division of work between HCP Terraform and Ansible Automation Platform (as l
 - AAP: Configure the RHEL10 servers to become a webserver serving a website
 
 HCP Terraform has all the credentials needed to do it's thingy in the cloud of your choice: AWS 😉.
-AAP will use the integrations with Terraform to be able to do it's thing on the provisioned infrastructure. AAP has no credentials for the cloud!
+AAP will use the integrations with Terraform to be able to do it's thing on the provisioned infrastructure.
 
 So what are the basics we have set up for you:
 1. HCP Terraform Organization called 'TechXchangeNL'
