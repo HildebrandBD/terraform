@@ -1,16 +1,37 @@
-resource "aap_inventory" "TechXchangeNL-IHD-TF" {
-  name         = "TF-INV"
-  description  = "A new inventory for testing"
+data "aap_job_template" "deploy_web_server" {
+  name              = "Deploy Web Server"
+  organization_name = var.organization_name
+}
+
+data "aap_job_template" "deploy_web_site" {
+  name              = "Deploy Web Site"
+  organization_name = var.organization_name
+}
+
+
+resource "aap_inventory" "inventory" {
+  name         = "${var.instance_name_prefix}-aap-inventory"
+  description  = "A new inventory"
   organization = 2
 }
 
-resource "aap_group" "TechXchangeNL-IHD-TF-GRP" {
-  inventory_id = aap_inventory.TechXchangeNL-IHD-TF.id
-  name         = "TF-GRP"
+# Add the new EC2 instance to the inventory
+resource "aap_host" "my_host" {
+  for_each     = { for idx, instance in aws_instance.web_server : idx => instance }
+  inventory_id = aap_inventory.inventory.id
+  groups = toset([resource.aap_group.my_group.id])
+  name         = each.value.tags.Name
+  description  = "Host provisioned by HCP Terraform"
+  variables    = jsonencode({
+    ansible_user = "ec2-user"
+    ansible_host = each.value.public_ip
+    #public_ip    = each.value.public_ip
+    #target_hosts = each.value.public_ip
+  })
 }
 
-resource "aap_host" "TechXchangeNL-IHD-TF-HOST" {
-  inventory_id = aap_inventory.TechXchangeNL-IHD-TF.id
-  name         = "TF_HOST"
-  groups = [aap_group.TechXchangeNL-IHD-TF-GRP.id]
+# Create some infrastructure - inventory group - that has an action tied to it
+resource "aap_group" "my_group" {
+  name = "role_webserver"
+  inventory_id = aap_inventory.inventory.id
 }
